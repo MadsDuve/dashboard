@@ -1,0 +1,560 @@
+/* ============================================================
+   Smart Dashboard — stylesheet
+   Inspired by the macOS widget layout in the brief.
+   ============================================================ */
+
+/* ---- Global ---- */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    /* Warm sandstone gradient to echo the macOS wallpaper in the brief */
+    background: linear-gradient(160deg, #c9a882 0%, #a8815a 40%, #7a5c47 100%);
+    min-height: 100vh;
+    color: #1a1a1a;
+}
+
+.dashboard-container {
+    padding: 16px 20px 8px;
+    min-height: 100vh;
+}
+
+/* ---- Base card ---- */
+.widget {
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 18px;
+    padding: 12px 14px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+    height: 100%;
+    overflow: hidden;
+}
+
+.widget-title {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #555;
+    letter-spacing: 0.02em;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.widget-icon { font-size: 1rem; }
+
+.widget-sub {
+    font-size: 0.78rem;
+    color: #999;
+    margin-left: 4px;
+}
+
+.widget-timestamp {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: #bbb;
+    font-weight: 400;
+}
+
+.widget-error {
+    font-size: 0.82rem;
+    color: #aaa;
+    padding: 12px 4px;
+    font-style: italic;
+}
+
+.widget-notice {
+    font-size: 0.72rem;
+    color: #bbb;
+    margin-top: 8px;
+    font-style: italic;
+}
+
+/* ============================================================
+   WEATHER WIDGET
+   ============================================================ */
+.weather-widget {
+    background: linear-gradient(160deg, #1e3d5e 0%, #16314d 100%);
+    color: #fff;
+}
+
+.weather-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 4px;
+}
+
+.weather-city {
+    font-size: 0.95rem;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+.weather-main-icon { font-size: 1.6rem; }
+
+.weather-current {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.weather-temp {
+    font-size: 2.8rem;
+    font-weight: 200;
+    line-height: 1;
+    letter-spacing: -2px;
+}
+
+.weather-desc-block { padding-top: 6px; }
+
+.weather-desc {
+    font-size: 1rem;
+    font-weight: 400;
+    opacity: 0.9;
+}
+
+.weather-hl {
+    font-size: 0.8rem;
+    opacity: 0.65;
+    margin-top: 3px;
+}
+
+.weather-extra {
+    font-size: 0.78rem;
+    opacity: 0.55;
+    margin-top: 2px;
+}
+
+/* Hourly forecast */
+.hourly-forecast {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+}
+.hourly-forecast::-webkit-scrollbar { display: none; }
+
+.hourly-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    min-width: 36px;
+}
+
+.hour-time  { font-size: 0.75rem; opacity: 0.6; }
+.hour-icon  { font-size: 1.1rem; }
+.hour-temp  { font-size: 0.85rem; font-weight: 500; }
+.hour-precip{ font-size: 0.68rem; opacity: 0.55; }
+
+.weather-divider {
+    border-color: rgba(255, 255, 255, 0.18);
+    margin: 4px 0;
+}
+
+/* Daily forecast */
+.daily-forecast { display: flex; flex-direction: column; gap: 1px; }
+
+.daily-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.74rem;
+}
+
+.daily-day  { width: 38px; opacity: 0.75; }
+.daily-icon { font-size: 1rem; width: 22px; text-align: center; }
+
+.daily-bar-track {
+    flex: 1;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.daily-min { opacity: 0.55; width: 28px; text-align: right; }
+.daily-max { font-weight: 600; width: 28px; text-align: right; }
+
+/* ============================================================
+   TRANSPORT / DEPARTURES WIDGET
+   ============================================================ */
+.transport-widget { display: flex; flex-direction: column; }
+
+.departure-list { display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
+
+.departure-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    border-bottom: 1px solid #f4f4f4;
+    font-size: 0.82rem;
+}
+.departure-row:last-child { border-bottom: none; }
+
+.dep-line {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+    min-width: 48px;
+    text-align: center;
+}
+
+.dep-direction {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #222;
+}
+
+.dep-time-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    min-width: 48px;
+}
+
+.dep-time { font-weight: 700; font-size: 0.85rem; }
+
+.dep-platform { font-size: 0.7rem; color: #999; }
+
+/* ============================================================
+   CALENDAR WIDGET (day view)
+   ============================================================ */
+.calendar-widget { display: flex; flex-direction: column; }
+
+.cal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+
+.cal-day-name {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #e74c3c;
+    letter-spacing: 0.06em;
+}
+
+.cal-day-number {
+    font-size: 2rem;
+    font-weight: 200;
+    line-height: 1;
+    color: #111;
+}
+
+.cal-tomorrow-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #aaa;
+    letter-spacing: 0.06em;
+}
+
+.cal-timeline { display: flex; flex-direction: column; }
+
+.cal-slot {
+    display: flex;
+    align-items: center;
+    height: 15px;
+}
+
+.cal-time {
+    font-size: 0.7rem;
+    color: #bbb;
+    width: 24px;
+    flex-shrink: 0;
+}
+
+.cal-line {
+    flex: 1;
+    height: 1px;
+    background: #ececec;
+    margin-left: 6px;
+}
+
+/* ============================================================
+   MINI MONTH CALENDAR
+   ============================================================ */
+.mini-cal-widget { text-align: center; }
+
+.mc-month {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #e74c3c;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+}
+
+.mc-row {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 2px;
+}
+
+.mc-dh {
+    width: 26px;
+    height: 22px;
+    font-size: 0.72rem;
+    color: #bbb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mc-day {
+    width: 26px;
+    height: 26px;
+    font-size: 0.78rem;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: default;
+}
+
+.mc-today {
+    background: #e74c3c;
+    color: #fff;
+    font-weight: 700;
+}
+
+.mc-empty { visibility: hidden; }
+
+/* ============================================================
+   POLLEN WIDGET
+   ============================================================ */
+.pollen-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    gap: 6px;
+}
+
+.pollen-label {
+    width: 44px;
+    font-size: 0.8rem;
+    color: #444;
+    flex-shrink: 0;
+}
+
+.pollen-bar {
+    flex: 1;
+    height: 8px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.pollen-level {
+    font-size: 0.75rem;
+    font-weight: 600;
+    width: 48px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+/* ============================================================
+   TO-DO WIDGET
+   ============================================================ */
+.todo-widget {
+    display: flex;
+    flex-direction: column;
+}
+
+.todo-icon {
+    font-size: 1.6rem;
+    color: #444;
+    margin-bottom: 8px;
+}
+
+.todo-list { flex: 1; }
+
+.todo-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 5px 0;
+    border-bottom: 1px solid #f5f5f5;
+}
+.todo-item:last-child { border-bottom: none; }
+
+.todo-circle {
+    color: #ccc;
+    font-size: 1.1rem;
+    line-height: 1.2;
+    flex-shrink: 0;
+}
+
+.todo-text {
+    font-size: 0.83rem;
+    color: #333;
+    line-height: 1.35;
+}
+
+.todo-count {
+    margin-top: 12px;
+}
+
+.todo-count-num {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #222;
+    display: block;
+    line-height: 1;
+}
+
+.todo-count-label {
+    font-size: 0.78rem;
+    color: #999;
+}
+
+/* ============================================================
+   TRASH WIDGET
+   ============================================================ */
+.trash-list { display: flex; flex-direction: column; gap: 10px; }
+
+.trash-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+}
+
+.trash-label {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #222;
+}
+
+.trash-when {
+    font-size: 0.78rem;
+    color: #888;
+    margin-top: 1px;
+}
+
+/* ============================================================
+   STOCKS WIDGET
+   ============================================================ */
+.stocks-list { display: flex; flex-direction: column; gap: 4px; }
+
+.stock-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid #f5f5f5;
+}
+.stock-row:last-child { border-bottom: none; }
+
+.stock-labels { flex: 1; overflow: hidden; }
+
+.stock-ticker {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #111;
+}
+
+.stock-name {
+    font-size: 0.72rem;
+    color: #999;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.stock-values { text-align: right; }
+
+.stock-price {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #111;
+}
+
+.stock-change {
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+/* ============================================================
+   ELECTRICITY WIDGET
+   ============================================================ */
+.electricity-widget { }
+
+/* ============================================================
+   NEWS WIDGET
+   ============================================================ */
+.news-list { display: flex; flex-direction: column; }
+
+.news-item {
+    padding: 7px 0;
+    border-bottom: 1px solid #f2f2f2;
+}
+.news-item:last-child { border-bottom: none; }
+
+.news-cat {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+}
+
+.news-title {
+    font-size: 0.82rem;
+    color: #222;
+    line-height: 1.35;
+}
+
+/* ============================================================
+   PLACEHOLDER WIDGET
+   ============================================================ */
+.placeholder-widget {
+    border: 2px dashed rgba(0,0,0,0.08);
+    background: rgba(255,255,255,0.5) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 140px;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.dashboard-footer {
+    text-align: center;
+    padding: 6px 0 12px;
+}
+
+.footer-ts {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.7);
+}
+
+.footer-hint {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.45);
+}
+
+/* ============================================================
+   RESPONSIVE TWEAKS
+   ============================================================ */
+@media (max-width: 768px) {
+    .weather-temp { font-size: 2.8rem; }
+    .weather-widget { padding: 14px; }
+    .dashboard-container { padding: 10px; }
+}

@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:labs.rejseplanen.dk)",
+      "Bash(pip install:*)",
+      "Bash(python -c \"import config; import data_fetchers; import widgets; import app; print\\('All modules import OK'\\)\")",
+      "Bash(python3 -c \"import config; import data_fetchers; import widgets; import app; print\\('All modules import OK'\\)\")",
+      "Bash(pip3 show:*)",
+      "Read(//Library/Frameworks/Python.framework/Versions/**)",
+      "Bash(/Library/Frameworks/Python.framework/Versions/3.12/bin/python3 -c \"import dash; print\\('dash OK', dash.__version__\\)\")",
+      "Bash(/Library/Frameworks/Python.framework/Versions/3.12/bin/python3 -c 'import config; import data_fetchers; import widgets; import app; print\\('\\\\''All modules OK'\\\\''\\)')",
+      "Bash(/Library/Frameworks/Python.framework/Versions/3.12/bin/python3 -)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.home-assistant.io)",
+      "Bash(kill %1)",
+      "Bash(git -C \"/Users/Mads/Library/Mobile Documents/com~apple~CloudDocs/AU BSS/Kandidat/2. semester/Data Science Project/Dashboard/\" status)",
+      "Bash(rm -rf \"/Users/Mads/Library/Mobile Documents/com~apple~CloudDocs/AU BSS/Kandidat/2. semester/Data Science Project/Dashboard/.git\")",
+      "Bash(gh auth:*)"
+    ]
+  }
+}
