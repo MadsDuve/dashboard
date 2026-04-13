@@ -21,7 +21,10 @@ from config import CITY_CONFIG, REFRESH_INTERVAL_MINUTES
 from data_fetchers import (
     fetch_weather,
     fetch_electricity,
-    fetch_departures,
+    fetch_journeys,
+    fetch_drive_time,
+    fetch_pollen,
+    fetch_air_quality,
     fetch_news,
     fetch_stocks,
 )
@@ -31,6 +34,7 @@ from widgets import (
     electricity_widget,
     news_widget,
     stocks_widget,
+    calendar_widget,
     mini_calendar_widget,
     pollen_widget,
     todo_widget,
@@ -60,11 +64,14 @@ def serve_layout():
     now = datetime.now(_TZ)
 
     fetchers = {
-        "weather":  fetch_weather,
-        "price":    fetch_electricity,
-        "departs":  fetch_departures,
-        "news":     fetch_news,
-        "stocks":   fetch_stocks,
+        "weather":     fetch_weather,
+        "price":       fetch_electricity,
+        "departs":     fetch_journeys,
+        "drive_time":  fetch_drive_time,
+        "pollen":      fetch_pollen,
+        "air_quality": fetch_air_quality,
+        "news":        fetch_news,
+        "stocks":      fetch_stocks,
     }
     results = {}
     with ThreadPoolExecutor(max_workers=5) as executor:
@@ -78,7 +85,10 @@ def serve_layout():
 
     weather_data = results.get("weather")
     price_data   = results.get("price")
-    departures   = results.get("departs") or []
+    journeys     = results.get("departs") or []
+    drive_time   = results.get("drive_time")
+    pollen_data  = results.get("pollen") or []
+    air_quality  = results.get("air_quality")
     news_entries = results.get("news") or []
     stocks_data  = results.get("stocks") or {}
 
@@ -95,12 +105,12 @@ def serve_layout():
                         className="mb-3",
                     ),
                     dbc.Col(
-                        transport_widget(departures),
+                        transport_widget(journeys, drive_time),
                         xs=12, md=4,
                         className="mb-3",
                     ),
                     dbc.Col(
-                        mini_calendar_widget(),
+                        calendar_widget(),
                         xs=12, md=4,
                         className="mb-3",
                     ),
@@ -119,7 +129,7 @@ def serve_layout():
                         className="mb-3",
                     ),
                     dbc.Col(
-                        pollen_widget(),
+                        pollen_widget(pollen_data, air_quality),
                         xs=12, sm=6, md=4,
                         className="mb-3",
                     ),

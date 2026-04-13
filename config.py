@@ -12,18 +12,25 @@ CITY_CONFIG = {
     "electricity_price_area": "DK1",  # DK1 = Western DK, DK2 = Eastern DK
 }
 
+GOOGLE_MAPS_KEY = "AIzaSyAivSGV6wib5refL90ehe64aD-PhFkTh3g"
+
 TRANSPORT_CONFIG = {
-    # Rejseplanen stop ID for Aarhus H (main train station).
-    # Use https://xmlopen.rejseplanen.dk/bin/rest.exe/location?input=Aarhus+H&format=json to find other stop IDs.
-    "stop_id": "008600053",
-    "stop_name": "Aarhus H",
     "api_key": "c9f2faa4-93f7-4d57-a4aa-b5533ca6fbfe",
-    "max_departures": 8,
+    "origin": {
+        "name": "Tage-Hansens Gade 17, Aarhus C",
+        "lat": 56.1537,
+        "lon": 10.2038,
+    },
+    "destination": {
+        "name": "Anders Dams Passage, Silkeborg",
+        "lat": 56.1689402,
+        "lon": 9.5469173,
+    },
+    "num_trips": 3,
 }
 
 STOCKS_CONFIG = {
-    "tickers": ["ENR.DE", "JYSK.CO", "NOVO-B.CO"],
-    "history_period": "5d",
+    "tickers": ["DSV.CO", "JYSK.CO", "NOVO-B.CO"],
 }
 
 TRASH_CONFIG = {

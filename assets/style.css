@@ -132,19 +132,16 @@ body {
 /* Hourly forecast */
 .hourly-forecast {
     display: flex;
-    gap: 10px;
-    overflow-x: auto;
+    justify-content: space-between;
     padding-bottom: 2px;
-    scrollbar-width: none;
 }
-.hourly-forecast::-webkit-scrollbar { display: none; }
 
 .hourly-item {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 2px;
-    min-width: 36px;
+    flex: 1;
 }
 
 .hour-time  { font-size: 0.75rem; opacity: 0.6; }
@@ -186,17 +183,43 @@ body {
    ============================================================ */
 .transport-widget { display: flex; flex-direction: column; }
 
-.departure-list { display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
+.journey-list { display: flex; flex-direction: column; gap: 6px; }
 
-.departure-row {
+.journey-card {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 4px 0;
+    gap: 10px;
+    padding: 8px 0;
     border-bottom: 1px solid #f4f4f4;
     font-size: 0.82rem;
 }
-.departure-row:last-child { border-bottom: none; }
+.journey-card:last-child { border-bottom: none; }
+
+.journey-times {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    min-width: 90px;
+}
+.journey-depart { font-weight: 700; font-size: 0.9rem; color: #222; }
+.journey-arrow  { color: #aaa; font-size: 0.75rem; }
+.journey-arrive { font-size: 0.85rem; color: #555; }
+
+.journey-legs {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+    flex-wrap: wrap;
+}
+
+.journey-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    min-width: 56px;
+}
+.journey-duration  { font-weight: 700; font-size: 0.9rem; color: #222; }
+.journey-transfers { font-size: 0.7rem; color: #999; }
 
 .dep-line {
     display: inline-block;
@@ -206,28 +229,22 @@ body {
     font-size: 0.75rem;
     font-weight: 700;
     white-space: nowrap;
-    min-width: 48px;
+    min-width: 32px;
     text-align: center;
 }
 
-.dep-direction {
-    flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    color: #222;
-}
-
-.dep-time-block {
+.drive-time-row {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    min-width: 48px;
+    align-items: center;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #f0f0f0;
 }
 
-.dep-time { font-weight: 700; font-size: 0.85rem; }
-
-.dep-platform { font-size: 0.7rem; color: #999; }
+.drive-time-text {
+    font-size: 0.8rem;
+    color: #666;
+}
 
 /* ============================================================
    CALENDAR WIDGET (day view)
@@ -372,12 +389,28 @@ body {
 .todo-widget {
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
+}
+
+.todo-body {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 14px;
+    flex: 1;
 }
 
 .todo-icon {
-    font-size: 1.6rem;
-    color: #444;
-    margin-bottom: 8px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #3a3a3a;
+    color: #fff;
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 .todo-list { flex: 1; }
@@ -386,10 +419,8 @@ body {
     display: flex;
     align-items: flex-start;
     gap: 8px;
-    padding: 5px 0;
-    border-bottom: 1px solid #f5f5f5;
+    padding: 4px 0;
 }
-.todo-item:last-child { border-bottom: none; }
 
 .todo-circle {
     color: #ccc;
@@ -405,7 +436,7 @@ body {
 }
 
 .todo-count {
-    margin-top: 12px;
+    margin-top: 10px;
 }
 
 .todo-count-num {
@@ -447,21 +478,31 @@ body {
 /* ============================================================
    STOCKS WIDGET
    ============================================================ */
-.stocks-list { display: flex; flex-direction: column; gap: 4px; }
+.stocks-list { display: flex; flex-direction: column; }
 
 .stock-row {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 6px 0;
+    gap: 10px;
+    padding: 10px 0;
     border-bottom: 1px solid #f5f5f5;
 }
 .stock-row:last-child { border-bottom: none; }
 
 .stock-labels { flex: 1; overflow: hidden; }
 
+.stock-ticker-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.stock-arrow {
+    font-size: 0.75rem;
+}
+
 .stock-ticker {
-    font-size: 0.85rem;
+    font-size: 0.88rem;
     font-weight: 700;
     color: #111;
 }
@@ -472,12 +513,13 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin-top: 1px;
 }
 
 .stock-values { text-align: right; }
 
 .stock-price {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     font-weight: 600;
     color: #111;
 }

@@ -54,14 +54,6 @@ _MONTHS_DK  = [
     "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER",
 ]
 
-_LINE_COLORS = {
-    "IC":  "#c8102e", "ICE": "#c8102e", "LYN": "#c8102e",
-    "REG": "#004b93",
-    "S":   "#f7a600",
-    "BUS": "#007a4d", "EXB": "#007a4d", "NB": "#007a4d",
-    "M":   "#009b77",
-    "LET": "#0072b1",
-}
 
 
 def _wmo_icon(code: int) -> str:
@@ -116,7 +108,7 @@ def weather_widget(data: dict | None) -> html.Div:
             dt = _TZ.localize(datetime.strptime(t, "%Y-%m-%dT%H:%M"))
         except ValueError:
             continue
-        if dt > now and count < 6:
+        if dt > now and count < 12:
             hourly_items.append(
                 html.Div([
                     html.Div(f"{dt.hour:02d}", className="hour-time"),
@@ -198,85 +190,68 @@ def weather_widget(data: dict | None) -> html.Div:
 # Public transport widget
 # ---------------------------------------------------------------------------
 
-def transport_widget(departures: list) -> html.Div:
-    """Shows next departures from the configured stop."""
-    stop_name = CITY_CONFIG["name"] + " H"
-
-    if not departures:
+def transport_widget(journeys: list, drive_time: int | None = None) -> html.Div:
+    """Shows next 3 journeys from home to destination, plus a car time estimate."""
+    if not journeys:
         body = html.Div(
-            "No departures available – check API key or connection.",
+            "No journeys available – check API key or connection.",
             className="widget-error",
         )
     else:
-        rows = []
-        for dep in departures:
-            prod      = dep.get("ProductAtStop", {})
-            # Line display: prefer displayNumber, fall back to name
-            name      = prod.get("displayNumber") or dep.get("name", "?")
-            direction = (dep.get("direction", "Unknown"))[:32]
-            # API 2.0 returns HH:MM:SS — strip seconds for display
-            planned   = dep.get("time", "")[:5]
-            rt_raw    = dep.get("rtTime", "")
-            rt        = rt_raw[:5] if rt_raw else ""
-            cancelled = dep.get("cancelled", False)
-            platform  = dep.get("rtDepTrack") or dep.get("depTrack") or ""
-            delayed   = bool(rt and rt != planned)
-            display_t = rt if rt else planned
-            # Determine line type from ProductAtStop category
-            cat       = (prod.get("catOut") or dep.get("type", "BUS")).upper()
-            # Map Danish category strings to color keys
-            cat_map   = {
-                "INTERCITY": "IC", "IC": "IC", "LYN": "LYN", "ICE": "ICE",
-                "REGIONALTOG": "REG", "REG": "REG",
-                "S-TOG": "S", "S": "S",
-                "METRO": "M",
-                "BYBUS": "BUS", "BUS": "BUS", "LOKALBUS": "BUS",
-                "LETBANE": "LET",
-            }
-            line_type = cat_map.get(cat, "BUS")
-            bg_color  = _LINE_COLORS.get(line_type, "#555")
-
-            time_style = {}
-            if cancelled:
-                time_style = {"color": "#e74c3c", "textDecoration": "line-through"}
-            elif delayed:
-                time_style = {"color": "#e67e22"}
-            else:
-                time_style = {"color": "#27ae60"}
-
-            rows.append(
-                html.Div([
-                    html.Span(
-                        name,
-                        className="dep-line",
-                        style={"backgroundColor": bg_color},
-                    ),
-                    html.Span(direction, className="dep-direction"),
-                    html.Div([
-                        html.Span(
-                            "Cancelled" if cancelled else display_t,
-                            className="dep-time",
-                            style=time_style,
-                        ),
-                        html.Span(
-                            f" track {platform}" if platform else "",
-                            className="dep-platform",
-                        ),
-                    ], className="dep-time-block"),
-                ], className="departure-row")
+        cards = []
+        for j in journeys:
+            leg_badges = [
+                html.Span(
+                    leg["line"],
+                    className="dep-line",
+                    style={"backgroundColor": leg["color"]},
+                )
+                for leg in j["legs"]
+            ]
+            transfers = j["transfers"]
+            transfer_txt = (
+                "Direct" if transfers == 0
+                else f"{transfers} transfer{'s' if transfers > 1 else ''}"
             )
-        body = html.Div(rows, className="departure-list")
+            cards.append(
+                html.Div([
+                    # Left: depart → arrive
+                    html.Div([
+                        html.Span(j["depart"], className="journey-depart"),
+                        html.Span(" → ", className="journey-arrow"),
+                        html.Span(j["arrive"], className="journey-arrive"),
+                    ], className="journey-times"),
+                    # Middle: line badges
+                    html.Div(leg_badges, className="journey-legs"),
+                    # Right: duration + transfers
+                    html.Div([
+                        html.Div(f"{j['duration_min']} min", className="journey-duration"),
+                        html.Div(transfer_txt, className="journey-transfers"),
+                    ], className="journey-meta"),
+                ], className="journey-card")
+            )
+        body = html.Div(cards, className="journey-list")
+
+    # Car travel time row
+    if drive_time is not None:
+        car_row = html.Div([
+            html.Span("🚗", style={"fontSize": "0.9rem", "marginRight": "6px"}),
+            html.Span(f"By car: approx. {drive_time} min, including traffic", className="drive-time-text"),
+        ], className="drive-time-row")
+    else:
+        car_row = html.Div()
 
     return html.Div([
         html.Div([
-            html.Span("🚂", className="widget-icon"),
-            html.Span(f"Departures — {stop_name}"),
+            html.Span("🚌", className="widget-icon"),
+            html.Span("Home → Work"),
             html.Span(
                 datetime.now(_TZ).strftime("%H:%M"),
                 className="widget-timestamp",
             ),
         ], className="widget-title"),
         body,
+        car_row,
     ], className="widget transport-widget")
 
 
@@ -407,7 +382,7 @@ def news_widget(entries: list) -> html.Div:
 # ---------------------------------------------------------------------------
 
 def stocks_widget(data: dict) -> html.Div:
-    """Three stocks with mini sparklines."""
+    """Three stocks with intraday sparklines on a dark background."""
     if not data:
         body = html.Div("Stock data unavailable.", className="widget-error")
     else:
@@ -418,29 +393,43 @@ def stocks_widget(data: dict) -> html.Div:
             name    = d.get("name", ticker)
             history = d.get("history", [])
             up      = change >= 0
-            clr     = "#27ae60" if up else "#e74c3c"
+            clr     = "#e74c3c" if not up else "#2ecc71"
+            arrow   = "▼" if not up else "▲"
 
-            # Sparkline
+            # Sparkline — y-axis centred on previous close so up/down is symmetric
             if len(history) >= 2:
-                spark_fig = go.Figure(go.Scatter(
+                baseline = d.get("prev_close", history[0])
+                lo = min(history)
+                hi = max(history)
+                half = max(abs(hi - baseline), abs(lo - baseline)) * 1.2 or baseline * 0.002
+                spark_fig = go.Figure()
+                # Filled area between line and opening-price baseline
+                spark_fig.add_trace(go.Scatter(
                     y=history, mode="lines",
                     line=dict(color=clr, width=1.5),
-                    fill="tozeroy",
-                    fillcolor=f"rgba({44 if up else 231},{160 if up else 76},{96 if up else 60},0.12)",
+                    fill="tonexty",
+                    fillcolor=f"rgba({231 if not up else 46},{76 if not up else 204},{60 if not up else 113},0.25)",
+                    showlegend=False,
+                ))
+                # Invisible baseline trace for fill reference
+                spark_fig.add_trace(go.Scatter(
+                    y=[baseline] * len(history), mode="lines",
+                    line=dict(color="rgba(0,0,0,0.2)", width=1, dash="dot"),
+                    showlegend=False,
                 ))
                 spark_fig.update_layout(
-                    margin=dict(l=0, r=0, t=0, b=0),
+                    margin=dict(l=0, r=0, t=2, b=2),
                     paper_bgcolor="rgba(0,0,0,0)",
                     plot_bgcolor="rgba(0,0,0,0)",
-                    height=42, width=90,
+                    height=44, width=110,
                     xaxis=dict(visible=False),
-                    yaxis=dict(visible=False),
+                    yaxis=dict(visible=False, range=[baseline - half, baseline + half]),
                     showlegend=False,
                 )
                 spark = dcc.Graph(
                     figure=spark_fig,
                     config={"displayModeBar": False},
-                    style={"width": "90px", "height": "42px"},
+                    style={"width": "110px", "height": "44px", "flexShrink": "0"},
                 )
             else:
                 spark = html.Div()
@@ -448,14 +437,17 @@ def stocks_widget(data: dict) -> html.Div:
             rows.append(
                 html.Div([
                     html.Div([
-                        html.Div(ticker, className="stock-ticker"),
-                        html.Div(name[:22], className="stock-name"),
+                        html.Div([
+                            html.Span(arrow, className="stock-arrow", style={"color": clr}),
+                            html.Span(ticker, className="stock-ticker"),
+                        ], className="stock-ticker-row"),
+                        html.Div(name[:24], className="stock-name"),
                     ], className="stock-labels"),
                     spark,
                     html.Div([
-                        html.Div(_fmt_dk(price), className="stock-price"),
+                        html.Div(f"{price:,.2f}", className="stock-price"),
                         html.Div(
-                            f"{'▲' if up else '▼'} {_fmt_dk(abs(change))} %",
+                            f"{arrow} {abs(change):.2f} %",
                             className="stock-change",
                             style={"color": clr},
                         ),
@@ -477,19 +469,33 @@ def stocks_widget(data: dict) -> html.Div:
 # Calendar — day view
 # ---------------------------------------------------------------------------
 
+# Hard-coded schedule events: (label, start_h, start_m, end_h, end_m, bg_rgba, border_color)
+_CALENDAR_EVENTS = [
+    ("Work",             8,  0, 16,  0, "rgba(26,115,232,0.12)", "#1a73e8"),
+    ("Rasmus Football", 17,  0, 18,  0, "rgba(231,76,60,0.12)",  "#e74c3c"),
+    ("Gym",             20,  0, 21, 30, "rgba(39,174,96,0.12)",  "#27ae60"),
+]
+
+_CAL_SLOT_H   = 15   # px per hour in the timeline
+_CAL_TL_START = 8    # first hour shown
+_CAL_TL_END   = 22   # last hour shown (exclusive)
+
+
 def calendar_widget() -> html.Div:
     """
-    Shows today's date, a timeline from 09:00–20:00 with the current
-    time highlighted, and a header for tomorrow's count (placeholder).
-    In a real deployment this would connect to a CalDAV / iCal source.
+    Shows today's date and a day-view timeline from 08:00–22:00 with
+    hard-coded schedule events rendered as coloured blocks.
+    Replace _CALENDAR_EVENTS with a CalDAV / iCal source for live data.
     """
     now        = datetime.now(_TZ)
     today_name = _DAYS_LONG[now.weekday()]
-    tom_name   = "TOMORROW"
 
-    # Time slots 09–20
+    total_h = _CAL_TL_END - _CAL_TL_START          # number of visible hours
+    total_px = total_h * _CAL_SLOT_H                # total pixel height
+
+    # ---- Hour-line grid ----
     slots = []
-    for h in range(9, 19):
+    for h in range(_CAL_TL_START, _CAL_TL_END):
         slots.append(
             html.Div([
                 html.Span(f"{h:02d}", className="cal-time"),
@@ -497,37 +503,58 @@ def calendar_widget() -> html.Div:
             ], className="cal-slot")
         )
 
-    # Current-time indicator position (relative to 09:00–20:00 = 11 h)
-    elapsed_h   = max(0, min(11, now.hour + now.minute / 60 - 9))
-    top_pct     = elapsed_h / 11 * 100
+    # ---- Event blocks ----
+    event_blocks = []
+    for label, sh, sm, eh, em, bg, border in _CALENDAR_EVENTS:
+        top    = (sh - _CAL_TL_START + sm / 60) * _CAL_SLOT_H
+        height = max(14, ((eh - sh) * 60 + (em - sm)) / 60 * _CAL_SLOT_H)
+        event_blocks.append(
+            html.Div(
+                label,
+                style={
+                    "position":        "absolute",
+                    "top":             f"{top}px",
+                    "left":            "30px",
+                    "right":           "0",
+                    "height":          f"{height}px",
+                    "backgroundColor": bg,
+                    "borderLeft":      f"3px solid {border}",
+                    "borderRadius":    "4px",
+                    "padding":         "1px 5px",
+                    "fontSize":        "0.7rem",
+                    "fontWeight":      "600",
+                    "color":           border,
+                    "overflow":        "hidden",
+                    "zIndex":          "5",
+                    "boxSizing":       "border-box",
+                    "lineHeight":      "1.3",
+                }
+            )
+        )
+
+    # ---- Current-time red line ----
+    elapsed = max(0, min(total_h, now.hour + now.minute / 60 - _CAL_TL_START))
+    top_now = elapsed * _CAL_SLOT_H
+    time_indicator = html.Div(style={
+        "position":        "absolute",
+        "top":             f"{top_now}px",
+        "left":            "0",
+        "right":           "0",
+        "height":          "2px",
+        "backgroundColor": "#e74c3c",
+        "zIndex":          "10",
+    })
 
     return html.Div([
         html.Div([
-            html.Div([
-                html.Div(today_name, className="cal-day-name"),
-                html.Div(str(now.day), className="cal-day-number"),
-            ]),
-            html.Div([
-                html.Div(tom_name, className="cal-tomorrow-label"),
-                html.Div("2 all-day", className="cal-tomorrow-count",
-                         style={"fontSize": "0.75rem", "color": "#888"}),
-            ], style={"textAlign": "right"}),
+            html.Div(today_name, className="cal-day-name"),
+            html.Div(str(now.day), className="cal-day-number"),
         ], className="cal-header"),
 
-        html.Div([
-            html.Div(slots, className="cal-timeline"),
-            html.Div(
-                style={
-                    "position": "absolute",
-                    "top":   f"calc({top_pct}% - 1px)",
-                    "left":  "0",
-                    "right": "0",
-                    "height": "2px",
-                    "backgroundColor": "#e74c3c",
-                    "zIndex": "10",
-                }
-            ),
-        ], style={"position": "relative"}),
+        html.Div(
+            [html.Div(slots, className="cal-timeline")] + event_blocks + [time_indicator],
+            style={"position": "relative", "height": f"{total_px}px", "overflow": "hidden"},
+        ),
     ], className="widget calendar-widget")
 
 
@@ -569,24 +596,36 @@ def mini_calendar_widget() -> html.Div:
 # Pollen / Air quality widget (placeholder — requires Google Maps API key)
 # ---------------------------------------------------------------------------
 
-def pollen_widget() -> html.Div:
-    """
-    Pollen and air-quality overview.
-    Currently uses hard-coded demo data; replace with Google Pollen API
-    (https://developers.google.com/maps/documentation/pollen/overview)
-    once an API key is available.
-    """
-    pollen_data = [
-        ("Birch", 65, "#e67e22", "Medium"),
-        ("Grass", 20, "#27ae60", "Low"),
-        ("Elm",   85, "#e74c3c", "High"),
-    ]
+_POLLEN_COLORS = {
+    "Very Low":  "#27ae60",
+    "Low":       "#2ecc71",
+    "Moderate":  "#f39c12",
+    "High":      "#e67e22",
+    "Very High": "#e74c3c",
+}
 
+
+def pollen_widget(pollen: list, air_quality: dict | None) -> html.Div:
+    """Pollen forecast and air quality from Google APIs."""
+    title_row = html.Div([
+        html.Span("🌿", className="widget-icon"),
+        html.Span("Pollen & Air Quality"),
+    ], className="widget-title")
+
+    if not pollen and air_quality is None:
+        return html.Div([
+            title_row,
+            html.Div("Data unavailable.", className="widget-error"),
+        ], className="widget pollen-widget")
+
+    # Pollen rows (value 0–5 → bar %)
     rows = []
-    for name, pct, clr, label in pollen_data:
+    for p in pollen:
+        clr = _POLLEN_COLORS.get(p["category"], "#aaa")
+        pct = int(p["value"] / 5 * 100)
         rows.append(
             html.Div([
-                html.Span(name, className="pollen-label"),
+                html.Span(p["name"], className="pollen-label"),
                 html.Div(
                     html.Div(style={
                         "width": f"{pct}%", "height": "100%",
@@ -594,25 +633,56 @@ def pollen_widget() -> html.Div:
                     }),
                     className="pollen-bar",
                 ),
-                html.Span(label, className="pollen-level", style={"color": clr}),
+                html.Span(p["category"], className="pollen-level", style={"color": clr}),
             ], className="pollen-row")
         )
 
+    # AQI row
+    if air_quality:
+        aqi  = air_quality["aqi"]
+        cat  = air_quality["category"].replace(" air quality", "")
+        poll = air_quality["dominant_pollutant"]
+        dot_pct = min(100, aqi / 500 * 100)
+        aqi_row = html.Div([
+            html.Hr(style={"margin": "8px 0 6px", "borderColor": "#eee"}),
+            html.Div([
+                html.Span("Air Quality Index", style={"fontSize": "0.78rem", "color": "#666"}),
+                html.Span(f" · {poll}", style={"fontSize": "0.72rem", "color": "#bbb"}),
+                html.Span(f"  {cat}", style={"fontSize": "0.78rem", "fontWeight": "600", "color": "#555", "float": "right"}),
+            ], style={"marginBottom": "5px"}),
+            # Gradient bar with dot indicator
+            html.Div([
+                html.Div(style={
+                    "position": "absolute",
+                    "left":     f"calc({dot_pct}% - 7px)",
+                    "top":      "-3px",
+                    "width":    "14px",
+                    "height":   "14px",
+                    "borderRadius": "50%",
+                    "backgroundColor": "#fff",
+                    "boxShadow": "0 1px 4px rgba(0,0,0,0.35)",
+                    "zIndex": "2",
+                }),
+            ], style={
+                "position":   "relative",
+                "height":     "8px",
+                "borderRadius": "4px",
+                "background": "linear-gradient(to right, #4e8ef7, #00cfff, #00e676, #ffee58, #ffa726, #ef5350, #b71c1c, #7b1fa2)",
+            }),
+            html.Div(str(aqi), style={
+                "marginTop": "6px",
+                "fontSize":  "0.75rem",
+                "color":     "#888",
+                "marginLeft": f"calc({dot_pct}% - 6px)",
+            }),
+        ])
+    else:
+        aqi_row = html.Div()
+
     return html.Div([
-        html.Div([
-            html.Span("🌿", className="widget-icon"),
-            html.Span("Pollen & Air Quality"),
-        ], className="widget-title"),
-        html.Div(rows, style={"marginBottom": "10px"}),
-        html.Hr(style={"margin": "6px 0", "borderColor": "#eee"}),
-        html.Div([
-            html.Span("Air quality (AQI): ", style={"fontSize": "0.82rem", "color": "#666"}),
-            html.Span("Good ✓", style={"color": "#27ae60", "fontWeight": "600", "fontSize": "0.82rem"}),
-        ]),
-        html.Div(
-            "⚠ Requires Google Maps API key for live data",
-            className="widget-notice",
-        ),
+        title_row,
+        html.Div(rows),
+        aqi_row,
     ], className="widget pollen-widget")
 
 
@@ -623,8 +693,10 @@ def pollen_widget() -> html.Div:
 def todo_widget() -> html.Div:
     """Displays a short to-do list. Items are hard-coded for the demo."""
     todos = [
-        "Find a day to meet with grandpa",
-        "Look into 25th birthday planning",
+        "Buy groceries",
+        "Call Alice about weekend plans",
+        "Book dentist appointment",
+        "Pay electricity bill",
     ]
 
     items = [
@@ -636,8 +708,10 @@ def todo_widget() -> html.Div:
     ]
 
     return html.Div([
-        html.Div("≡", className="todo-icon"),
-        html.Div(items, className="todo-list"),
+        html.Div([
+            html.Div("≡", className="todo-icon"),
+            html.Div(items, className="todo-list"),
+        ], className="todo-body"),
         html.Div([
             html.Span(str(len(todos)), className="todo-count-num"),
             html.Div("To Do", className="todo-count-label"),
@@ -697,10 +771,6 @@ def trash_widget() -> html.Div:
             _trash_row("🟤", "General Waste", next_gw, day_label(next_gw)),
             _trash_row("♻️", "Recycling",     next_rc, day_label(next_rc)),
         ], className="trash-list"),
-        html.Div(
-            "⚠ Dates are calculated from the standard schedule — verify at kredslob.dk",
-            className="widget-notice",
-        ),
     ], className="widget trash-widget")
 
 
