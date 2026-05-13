@@ -283,10 +283,14 @@ def electricity_widget(prices: list | None) -> html.Div:
             hours.append(h)
             values.append(price)
             if h == current_hour:
-                colors.append("#e74c3c")
+                colors.append("#4a90d9")
             elif price > 2.5:
-                colors.append("#e7923c")
+                colors.append("#f61c09")
+            elif price > 2.0:
+                colors.append("#eb652b")
             elif price > 1.5:
+                colors.append("#fec404")
+            elif price > 1.0:
                 colors.append("#f3e012")
             else:
                 colors.append("#38f10f")
