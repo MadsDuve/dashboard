@@ -351,20 +351,38 @@ def news_widget(entries: list) -> html.Div:
     if not entries:
         items = [html.Div("Nyheder ikke tilgængelige.", className="widget-error")]
     else:
+        _TZ_NEWS = pytz.timezone(CITY_CONFIG["timezone"])
+        _CAT_COLORS = {
+            "Indland": "#2980b9",
+            "Udland":  "#8e44ad",
+            "Politik": "#c0392b",
+            "Penge":   "#27ae60",
+            "Kultur":  "#d35400",
+        }
         items = []
         for e in entries:
-            title   = getattr(e, "title", "") or ""
-            tags    = getattr(e, "tags", []) or []
-            cat     = tags[0]["term"] if tags else "Nyheder"
-            is_live = "live" in title.lower()
+            title     = e.get("title", "") or ""
+            cat       = e.get("category", "Nyheder")
+            published = e.get("published_parsed")
+            is_live   = "live" in title.lower()
 
+            if published:
+                ts = _cal.timegm(published)
+                time_str = datetime.fromtimestamp(ts, tz=_TZ_NEWS).strftime("%H:%M")
+            else:
+                time_str = ""
+
+            bg = "#e74c3c" if is_live else _CAT_COLORS.get(cat, "#444")
             items.append(
                 html.Div([
-                    html.Span(
-                        ("● " if is_live else "") + cat,
-                        className="news-cat",
-                        style={"backgroundColor": "#e74c3c" if is_live else "#444"},
-                    ),
+                    html.Div([
+                        html.Span(
+                            ("● " if is_live else "") + cat,
+                            className="news-cat",
+                            style={"backgroundColor": bg},
+                        ),
+                        html.Span(time_str, className="news-time") if time_str else None,
+                    ], className="news-meta"),
                     html.Div(
                         title[:90] + ("…" if len(title) > 90 else ""),
                         className="news-title",

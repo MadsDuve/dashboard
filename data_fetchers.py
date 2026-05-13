@@ -345,19 +345,49 @@ def fetch_air_quality() -> dict | None:
 
 def fetch_news() -> list:
     """
-    Parse DR's all-news RSS feed and return the latest entries.
-    Uses requests (which has working SSL) to fetch, then feedparser to parse.
+    Fetch the latest article from each DR category feed and return them
+    sorted by publish time (newest first). Returns dicts with keys:
+    title, category, published_parsed.
     """
-    try:
+    categories = {
+        "indland": "Indland",
+        "udland":  "Udland",
+        "politik": "Politik",
+        "penge":   "Penge",
+        "kultur":  "Kultur",
+    }
+
+    def _fetch_category(slug, label):
         resp = requests.get(
-            "https://www.dr.dk/nyheder/service/feeds/allenyheder",
+            f"https://www.dr.dk/nyheder/service/feeds/{slug}",
             timeout=10,
         )
         resp.raise_for_status()
         feed = feedparser.parse(resp.content)
-        return feed.entries[:3]
-    except Exception:
-        return []
+        entries = []
+        for e in feed.entries[:2]:
+            entries.append({
+                "title":            getattr(e, "title", "") or "",
+                "category":         label,
+                "published_parsed": getattr(e, "published_parsed", None),
+            })
+        return entries
+
+    results = []
+    with ThreadPoolExecutor(max_workers=5) as ex:
+        futures = {ex.submit(_fetch_category, slug, label): label
+                   for slug, label in categories.items()}
+        for future in as_completed(futures, timeout=12):
+            try:
+                results.extend(future.result())
+            except Exception:
+                pass
+
+    results.sort(
+        key=lambda e: e["published_parsed"] or (0,) * 9,
+        reverse=True,
+    )
+    return results[:5]
 
 
 # ---------------------------------------------------------------------------
