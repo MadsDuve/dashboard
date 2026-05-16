@@ -30,7 +30,7 @@ TRANSPORT_CONFIG = {
 }
 
 STOCKS_CONFIG = {
-    "tickers": ["DSV.CO", "JYSK.CO", "NOVO-B.CO"],
+    "tickers": ["DSV.CO", "JYSK.CO", "NOVO-B.CO", "VWS.CO", "MAERSK-B.CO"],
 }
 
 TRASH_CONFIG = {
