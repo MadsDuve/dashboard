@@ -516,7 +516,7 @@ body {
     margin-top: 1px;
 }
 
-.stock-values { text-align: right; }
+.stock-values { text-align: right; min-width: 72px; }
 
 .stock-price {
     font-size: 0.95rem;
@@ -532,7 +532,9 @@ body {
 /* ============================================================
    ELECTRICITY WIDGET
    ============================================================ */
-.electricity-widget { }
+.electricity-widget { display: flex; flex-direction: column; }
+.electricity-widget .js-plotly-plot,
+.electricity-widget .dash-graph { flex: 1; min-height: 0; }
 
 /* ============================================================
    NEWS WIDGET

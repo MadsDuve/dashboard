@@ -316,7 +316,6 @@ def electricity_widget(prices: list | None) -> html.Div:
         margin=dict(l=28, r=8, t=8, b=28),
         paper_bgcolor="white",
         plot_bgcolor="white",
-        height=170,
         xaxis=dict(
             tickfont=dict(size=9, color="#aaa"),
             gridcolor="rgba(0,0,0,0)",
@@ -338,7 +337,8 @@ def electricity_widget(prices: list | None) -> html.Div:
             html.Span("Electricity Prices (DK1)"),
             html.Span(price_label, className="widget-sub"),
         ], className="widget-title"),
-        dcc.Graph(figure=fig, config={"displayModeBar": False}),
+        dcc.Graph(figure=fig, config={"displayModeBar": False},
+                  style={"flex": "1", "minHeight": "0"}),
     ], className="widget electricity-widget")
 
 
