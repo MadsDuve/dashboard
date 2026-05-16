@@ -18,7 +18,15 @@
       "Bash(rm -rf \"/Users/Mads/Library/Mobile Documents/com~apple~CloudDocs/AU BSS/Kandidat/2. semester/Data Science Project/Dashboard/.git\")",
       "Bash(gh auth:*)",
       "Bash(python -c \"from data_fetchers import fetch_drive_time; result = fetch_drive_time\\(\\); print\\('Result:', result\\)\")",
-      "Bash(python3 -c \"from data_fetchers import fetch_drive_time; result = fetch_drive_time\\(\\); print\\('Result:', result\\)\")"
+      "Bash(python3 -c \"from data_fetchers import fetch_drive_time; result = fetch_drive_time\\(\\); print\\('Result:', result\\)\")",
+      "Bash(git commit *)",
+      "Bash(git add *)",
+      "Bash(git push *)",
+      "Bash(/Library/Frameworks/Python.framework/Versions/3.12/bin/python3 -c ' *)",
+      "Bash(git -C \"/Users/Mads/Library/Mobile Documents/com~apple~CloudDocs/AU BSS/Kandidat/2. semester/Data Science Project/Dashboard\" status)",
+      "Bash(git -C \"/Users/Mads/Library/Mobile Documents/com~apple~CloudDocs/AU BSS/Kandidat/2. semester/Data Science Project/Dashboard\" diff)",
+      "Bash(git -C \"/Users/Mads/Library/Mobile Documents/com~apple~CloudDocs/AU BSS/Kandidat/2. semester/Data Science Project/Dashboard\" add .claude/settings.local.json .gitignore)",
+      "Bash(git -C '/Users/Mads/Library/Mobile Documents/com~apple~CloudDocs/AU BSS/Kandidat/2. semester/Data Science Project/Dashboard' commit -m ' *)"
     ]
   }
 }
